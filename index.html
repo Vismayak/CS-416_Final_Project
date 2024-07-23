@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview of Renewable Energy Adoption</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+    </style>
+</head>
+<body onload="init()">
+
+    <!-- Part of the page that is static and html driven, add text stuff here -->
+    <h1> Overview of Renewable Energy Adoption</h1>
+    <svg width="800" height="400"></svg>
+
+    <!-- D3 scropting stuff will be here -->
+    <script>
+
+        function lineGraphTime(yAxisColumn, xAxisColumn, svg, data) {
+            // Set the dimensions and margins of the graph
+            const margin = {top: 10, right: 30, bottom: 30, left: 60};
+            const width = +svg.attr("width")  - margin.left - margin.right;
+            const height = +svg.attr("height")  - margin.top - margin.bottom;
+            const g = svg.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Read the data
+            data.forEach(function(d) {
+                d[xAxisColumn] = new Date(d[xAxisColumn]);
+                d[yAxisColumn] = +d[yAxisColumn];
+            });
+
+            // Add X axis --> it is a date format
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, function(d) { return d[xAxisColumn]; }))
+                .range([0, width]);
+            g.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add Y axis
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, function(d) { return +d[yAxisColumn]; })])
+                .range([height, 0]);
+            g.append("g")
+                .call(d3.axisLeft(y));
+            
+            // Add the line
+            g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function(d) { return x(d[xAxisColumn]) })
+                    .y(function(d) { return y(d[yAxisColumn]) })
+                );
+        }
+
+        // Function to initialize the page and required data
+        async function init() {
+        // Load data
+        const world_data = await d3.csv("data/world_energy_data.csv");
+        lineGraphTime("renewables_share_elec", "year", d3.select("svg"), world_data);
+        }
+    </script>
+</body>
+</html>
