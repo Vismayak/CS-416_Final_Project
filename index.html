@@ -14,10 +14,13 @@
     <h1> Overview of Renewable Energy Adoption</h1>
     <svg width="800" height="400"></svg>
 
+    <!-- For charts where we might want a tool tip -->
+    <div id="tooltip" style="position: absolute; opacity: 0; background: lightsteelblue; padding: 5px; border-radius: 5px;"></div>
+
     <!-- D3 scropting stuff will be here -->
     <script>
 
-        function lineGraphTime(yAxisColumn, xAxisColumn, svg, data) {
+        function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data) {
             // Set the dimensions and margins of the graph
             const margin = {top: 10, right: 30, bottom: 30, left: 60};
             const width = +svg.attr("width")  - margin.left - margin.right;
@@ -25,19 +28,27 @@
             const g = svg.append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+            const parseTime = d3.timeParse("%Y");
+
             // Read the data
             data.forEach(function(d) {
-                d[xAxisColumn] = new Date(d[xAxisColumn]);
+                d[xAxisColumn] = parseTime(d[xAxisColumn]);
                 d[yAxisColumn] = +d[yAxisColumn];
             });
 
-            // Add X axis --> it is a date format
+            // Add X axis
             const x = d3.scaleTime()
                 .domain(d3.extent(data, function(d) { return d[xAxisColumn]; }))
                 .range([0, width]);
             g.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x));
+
+            // X axis label
+            g.append("text")
+                .attr("transform", "translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text(xLabel);
 
             // Add Y axis
             const y = d3.scaleLinear()
@@ -46,6 +57,15 @@
             g.append("g")
                 .call(d3.axisLeft(y));
             
+            // Y axis label
+            g.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x",0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text(yLabel);
+
             // Add the line
             g.append("path")
                 .datum(data)
@@ -56,13 +76,49 @@
                     .x(function(d) { return x(d[xAxisColumn]) })
                     .y(function(d) { return y(d[yAxisColumn]) })
                 );
+            
+            // Tooltip setup
+            const tooltip = d3.select("#tooltip");
+
+            // Use invisible rectangle to capture mouse events
+            g.append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", "none")
+                .attr("pointer-events", "all")
+                .on("mousemove", function(event) {
+                    const mouse = d3.pointer(event);
+                    // Get the x value of the mouse in data space
+                    const mouseX = x.invert(mouse[0]);
+                    // Find the data point closest to the mouse
+                    const bisectDate = d3.bisector(function(d) { return d[xAxisColumn]; }).left;
+                    const i = bisectDate(data, mouseX, 1);
+                    const d = data[i];
+
+                    // Show the tooltip
+                    tooltip.transition()
+                        .duration(50)
+                        .style("opacity", .9);
+                    
+                    tooltip.html(`${xLabel}: `+ d3.timeFormat("%Y")(d[xAxisColumn]) + `<br/> ${yLabel}: ` + d[yAxisColumn] + "%")
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", 0);
+                });
+            
         }
+
+
 
         // Function to initialize the page and required data
         async function init() {
         // Load data
         const world_data = await d3.csv("data/world_energy_data.csv");
-        lineGraphTime("renewables_share_elec", "year", d3.select("svg"), world_data);
+        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year", d3.select("svg"), world_data);
         }
     </script>
 </body>
