@@ -30,7 +30,6 @@
 
             const parseTime = d3.timeParse("%Y");
 
-            // Read the data
             data.forEach(function(d) {
                 d[xAxisColumn] = parseTime(d[xAxisColumn]);
                 d[yAxisColumn] = +d[yAxisColumn];
@@ -106,19 +105,124 @@
                 })
                 .on("mouseout", function() {
                     tooltip.transition()
-                        .duration(200)
+                        .duration(50)
                         .style("opacity", 0);
                 });
             
         }
 
+        function multiLineGraph(xAxisColumn, yJSON, yLabel, xLabel, svg, data) {
+            // Set the dimensions and margins of the graph
+            const margin = {top: 10, right: 30, bottom: 30, left: 60};
+            const width = +svg.attr("width")  - margin.left - margin.right;
+            const height = +svg.attr("height")  - margin.top - margin.bottom;
+            const g = svg.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+            const parseTime = d3.timeParse("%Y");
+
+            const yAxisColumns = Object.keys(yJSON);
+            data.forEach(d => {
+                d[xAxisColumn] = parseTime(d[xAxisColumn]);
+                yAxisColumns.forEach(yCol => d[yCol] = +d[yCol]);
+            });
+
+            // Add X axis
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, function(d) { return d[xAxisColumn]; }))
+                .range([0, width]);
+            g.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add X axis label
+            // X axis label
+            g.append("text")
+                .attr("transform", "translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text(xLabel);
+
+
+            // Add Y axis
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d3.max(yAxisColumns, yCol => d[yCol]))])
+                .range([height, 0]);
+            g.append("g")
+                .call(d3.axisLeft(y));
+
+            // Y axis label
+            g.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x",0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text(yLabel);
+
+            // Color palette
+            const color = d3.scaleOrdinal()
+                .domain(yAxisColumns)
+                .range(d3.schemeCategory10);
+
+            // Draw the lines for each y-axis column
+            yAxisColumns.forEach(yCol => {
+                g.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", color(yCol))
+                    .attr("stroke-width", 1.5)
+                    .attr("d", d3.line()
+                        .x(d => x(d[xAxisColumn]))
+                        .y(d => y(d[yCol]))
+                    );
+            });
+
+            // Tooltip setup
+            const tooltip = d3.select("#tooltip");
+
+            g.append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", "none")
+                .attr("pointer-events", "all")
+                .on("mousemove", function(event) {
+                    const mouse = d3.pointer(event);
+                    const mouseX = x.invert(mouse[0]);
+                    const bisectDate = d3.bisector(d => d[xAxisColumn]).left;
+                    const i = bisectDate(data, mouseX, 1);
+
+                    const d = data[i];
+
+                    // Show the tooltip
+                    tooltip.transition()
+                        .duration(50)
+                        .style("opacity", .9);
+
+                    tooltip.html(`${xLabel}: ` + d3.timeFormat("%Y")(d[xAxisColumn]) + "<br/>"
+                        + Object.keys(yJSON).map(yCol => `${yJSON[yCol]}: ${d[yCol]}%`).join("<br/>"))
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");   
+                    })
+                .on("mouseout", function() {
+                    tooltip.transition()
+                        .duration(50)
+                        .style("opacity", 0);
+                });
+        }
 
         // Function to initialize the page and required data
         async function init() {
         // Load data
         const world_data = await d3.csv("data/world_energy_data.csv");
-        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year", d3.select("svg"), world_data);
+        // singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year", d3.select("svg"), world_data);
+        const sourcesJson = {
+            "wind_share_elec": "Wind",
+            "solar_share_elec": "Solar",
+            "hydro_share_elec": "Hydro",
+            "biofuel_share_elec": "Biofuel",
+            "other_renewables_share_elec_exc_biofuel": "Other Renewables"
+        };
+        multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", d3.select("svg"), world_data);
         }
     </script>
 </body>
