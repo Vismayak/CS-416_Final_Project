@@ -113,7 +113,7 @@
 
         function multiLineGraph(xAxisColumn, yJSON, yLabel, xLabel, svg, data) {
             // Set the dimensions and margins of the graph
-            const margin = {top: 10, right: 150, bottom: 30, left: 60};
+            const margin = {top: 10, right: 150, bottom: 30, left: 50};
             const width = +svg.attr("width")  - margin.left - margin.right;
             const height = +svg.attr("height")  - margin.top - margin.bottom;
             const g = svg.append("g")
@@ -211,7 +211,7 @@
             
             // Add legend
             const legend = g.append("g")
-                .attr("transform", `translate(${width + margin.left -50}, ${margin.top})`)
+                .attr("transform", `translate(${width + margin.left -40}, ${margin.top})`)
                 .selectAll("g")
                 .data(yAxisColumns)
                 .enter()
@@ -244,7 +244,15 @@
             "biofuel_share_elec": "Biofuel",
             "other_renewables_share_elec_exc_biofuel": "Other Renewables"
         };
-        multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", d3.select("svg"), world_data);
+        // multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", d3.select("svg"), world_data);
+
+        const carbonImpactJson = {
+            "renewables_share_elec": "% of Total Electricity from Renewables",
+            "carbon_intensity_elec": "Greenhouse gases emitted per unit of generated electricity"
+        };
+        // Multi-line graph with renewables and carbon intensity data to see impact, filter out 0 carbon intensity values
+        multiLineGraph("year", carbonImpactJson,  "", "Year", d3.select("svg"), world_data.filter(d => d.carbon_intensity_elec != 0));
+
         }
     </script>
 </body>
