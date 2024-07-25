@@ -253,6 +253,8 @@
         // Multi-line graph with renewables and carbon intensity data to see impact, filter out 0 carbon intensity values
         multiLineGraph("year", carbonImpactJson,  "", "Year", d3.select("svg"), world_data.filter(d => d.carbon_intensity_elec != 0));
 
+
+        // TODO: Add annotations to the graph
         }
     </script>
 </body>
