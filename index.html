@@ -19,18 +19,19 @@
 
     <!-- Part of the page that is static and html driven, add text stuff here -->
     <h1> Overview of Renewable Energy Adoption</h1>
+    <p><strong>Data Source</strong>  - <a href="https://ourworldindata.org/renewable-energy" target="_blank">Our World in Data</a></p>
     <button id="prevButton" onclick="prevScene()">Previous</button>
     <button id="nextButton" onclick="nextScene()">Next</button>
     <div class="chart active">
-        <p> This chart shows the percentage of total electricity generated from renewable sources and the carbon intensity of electricity generation over time. </p>
+        <p> The chart shows the percentage of total electricity worldwide generated from renewable sources. There is a steep increase in recent decades, thanks to worldwide cooperation towards a greener future. </p>
         <svg id="graph1"  width="800" height="400"></svg>
     </div>
     <div class="chart">
-        <p> This chart shows the percentage of total electricity generated from different renewable sources over time. </p>
+        <p> The chart shows the percentage of total electricity generated from different renewable sources over time. </p>
         <svg id="graph2"  width="800" height="400"></svg>
     </div>
     <div class="chart">
-        <p> This chart shows the percentage of total electricity generated from renewable sources and the carbon intensity of electricity generation over time. </p>
+        <p>The chart represents the carbon intensity of electricity generation. Carbon intensity refers to the greenhouse gases emitted per unit of generated electricity, measured in CO<sub>2</sub> equivalents per kilowatt-hour.</p>
         <svg id="graph3"  width="800" height="400"></svg>   
         <svg id="graph4"  width="800" height="400"></svg> 
     </div>
@@ -480,6 +481,14 @@
                 "y": world_data.filter(d => d.year === "2016")[0].renewables_share_elec,
                 "label": "The Paris Agreement was signed",
                 "title": "2016",
+                "dx": 30,
+                "dy": 30
+            },
+            {
+                "x": "2009",
+                "y": world_data.filter(d => d.year === "2009")[0].renewables_share_elec,
+                "label": "International Renewable Energy Agency established",
+                "title": "2009",
                 "dx": 30,
                 "dy": 30
             }
