@@ -32,6 +32,16 @@
         <p> This chart shows the percentage of total electricity generated from renewable sources and the carbon intensity of electricity generation over time. </p>
         <svg id="graph3"  width="800" height="400"></svg>    
     </div>
+    <div class="chart">
+        <!-- User interactive scene -->
+        <select id="countrySelector" onchange="updateCountryCharts()">
+            <option value="All">All Countries</option>
+            <!-- Add options dynamically via JavaScript -->  
+        </select>
+        <svg id="countryGraph1" width="800" height="400"></svg>
+        <svg id="countryGraph2" width="800" height="400"></svg>
+        <svg id="countryGraph3" width="800" height="400"></svg>      
+    </div>
 
     <!-- For charts where we might want a tool tip -->
     <div id="tooltip" style="position: absolute; opacity: 0; background: lightsteelblue; padding: 5px; border-radius: 5px;"></div>
@@ -39,6 +49,25 @@
     <!-- D3 scropting stuff will be here -->
     <script>
         let currentScene = 0;
+        const sourcesJson = {
+            "wind_share_elec": "Wind",
+            "solar_share_elec": "Solar",
+            "hydro_share_elec": "Hydro",
+            "biofuel_share_elec": "Biofuel",
+            "other_renewables_share_elec_exc_biofuel": "Other Renewables"
+        };
+        const carbonImpactJson = {
+            "renewables_share_elec": "% of Total Electricity from Renewables",
+            "carbon_intensity_elec": "Greenhouse gases emitted per unit of generated electricity"
+        };
+
+        let country_data;
+        let world_data;
+
+        // function to create a copy of the data
+        function copyData(data) {
+            return data.map(d => ({ ...d }));
+        }
 
         function prevScene() {
             if (currentScene > 0) {
@@ -48,12 +77,11 @@
         }
 
         function nextScene() {
-            if (currentScene < 2) {
+            if (currentScene < 3) {
                 currentScene++;
                 showScene(currentScene);
             }
         }
-
 
         function updateButtonVisibility() {
             const prevButton = document.getElementById("prevButton");
@@ -65,7 +93,7 @@
                 prevButton.style.display = "inline";
             }
 
-            if (currentScene === 2) {
+            if (currentScene === 3) {
                 nextButton.style.display = "none";
             } else {
                 nextButton.style.display = "inline";
@@ -82,6 +110,17 @@
                 }
             });
             updateButtonVisibility();
+        }
+
+        function updateDropdown(dropdownID, data, value) {
+            const dropdown = document.getElementById(dropdownID);
+            const values = [...new Set(data.map(d => d[value]))];
+            values.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.text = value;
+                dropdown.appendChild(option);
+            });
         }
 
         function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data) {
@@ -177,7 +216,6 @@
 
         function multiLineGraph(xAxisColumn, yJSON, yLabel, xLabel, svg, data) {
             // Set the dimensions and margins of the graph
-            console.log(data);
             const margin = {top: 10, right: 150, bottom: 30, left: 50};
             const width = +svg.attr("width")  - margin.left - margin.right;
             const height = +svg.attr("height")  - margin.top - margin.bottom;
@@ -297,34 +335,45 @@
                 .style("alignment-baseline", "middle");
         }
 
+        function filterDataByCountry(data, country) {
+            return data.filter(d => d.country === country);
+        }
+        
+        function updateCountryCharts(){
+            const country = document.getElementById("countrySelector").value;
+            const data = filterDataByCountry(country_data, country);
+            console.log(data);
+
+            d3.select("#countryGraph1").selectAll("*").remove();
+            d3.select("#countryGraph2").selectAll("*").remove();
+            d3.select("#countryGraph3").selectAll("*").remove();
+
+            const chart1 = d3.select("#countryGraph1");
+            const chart2 = d3.select("#countryGraph2");
+            const chart3 = d3.select("#countryGraph3");
+
+            singleLineGraphTime("renewables_share_elec", "year", "% of Total Electricity", "Year", chart1, copyData(data));
+            multiLineGraph("year", sourcesJson, "% of Total Electricity", "Year", chart2, copyData(data));
+            multiLineGraph("year", carbonImpactJson, "", "Year", chart3, copyData(data).filter(d => d.carbon_intensity_elec != 0));
+            
+        }
+
         // Function to initialize the page and required data
         async function init() {
         updateButtonVisibility();
         // Load data
-        const world_data = await d3.csv("data/world_energy_data.csv");
+        world_data = await d3.csv("data/world_energy_data.csv");
+        country_data = await d3.csv("data/country_energy_data.csv");
 
-        // function to create a copy of the data
-        function copyData(data) {
-            return data.map(d => ({ ...d }));
-        }
+        // Add options to the dropdown
+        updateDropdown("countrySelector", country_data, "country");
 
         const chart1 = d3.select("#graph1");
         const chart2 = d3.select("#graph2");
         const chart3 = d3.select("#graph3");
         singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data));
-        const sourcesJson = {
-            "wind_share_elec": "Wind",
-            "solar_share_elec": "Solar",
-            "hydro_share_elec": "Hydro",
-            "biofuel_share_elec": "Biofuel",
-            "other_renewables_share_elec_exc_biofuel": "Other Renewables"
-        };
         multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", chart2, copyData(world_data));
 
-        const carbonImpactJson = {
-            "renewables_share_elec": "% of Total Electricity from Renewables",
-            "carbon_intensity_elec": "Greenhouse gases emitted per unit of generated electricity"
-        };
         // Multi-line graph with renewables and carbon intensity data to see impact, filter out 0 carbon intensity values
         multiLineGraph("year", carbonImpactJson,  "", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0));
 
