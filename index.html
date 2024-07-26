@@ -19,21 +19,21 @@
 
     <!-- Part of the page that is static and html driven, add text stuff here -->
     <h1> Overview of Renewable Energy Adoption</h1>
-    <p><strong>Data Source</strong>  - <a href="https://ourworldindata.org/renewable-energy" target="_blank">Our World in Data</a></p>
+    <h4><strong>Data Source</strong>  - <a href="https://ourworldindata.org/renewable-energy" target="_blank">Our World in Data</a></h4>
+    <p>Charts that provide users with details of renewable energy adoption and breakdown. Use cursor to hover over charts for more specfic details<p>
     <button id="prevButton" onclick="prevScene()">Previous</button>
     <button id="nextButton" onclick="nextScene()">Next</button>
     <div class="chart active">
-        <p> The chart shows the percentage of total electricity worldwide generated from renewable sources. There is a steep increase in recent decades, thanks to worldwide cooperation towards a greener future. </p>
         <svg id="graph1"  width="800" height="400"></svg>
+        <p> The chart shows the percentage of total electricity worldwide generated from renewable sources. There is a steep increase in recent decades, thanks to worldwide cooperation towards a greener future. </p>
     </div>
     <div class="chart">
-        <p> The chart shows the percentage of total electricity generated from different renewable sources over time. </p>
         <svg id="graph2"  width="800" height="400"></svg>
+        <p> The chart shows the percentage of total electricity generated from different renewable sources over time. </p>
     </div>
     <div class="chart">
-        <p>The chart represents the carbon intensity of electricity generation. Carbon intensity refers to the greenhouse gases emitted per unit of generated electricity, measured in CO<sub>2</sub> equivalents per kilowatt-hour.</p>
         <svg id="graph3"  width="800" height="400"></svg>   
-        <svg id="graph4"  width="800" height="400"></svg> 
+        <p>The chart represents the carbon intensity of electricity generation. Carbon intensity refers to the greenhouse gases emitted per unit of generated electricity, measured in CO<sub>2</sub> equivalents per kilowatt-hour.</p>
     </div>
     <div class="chart">
         <!-- User interactive scene -->
@@ -503,7 +503,7 @@
                 "x":"2000",
                 "y":world_data.filter(d => d.year === "2000")[0].hydro_share_elec,
                 "label": "Hyrdoelectricity produces the most electricity of all renewables",
-                "dx": -60,
+                "dx": -80,
                 "dy": 30
             }
         ]
