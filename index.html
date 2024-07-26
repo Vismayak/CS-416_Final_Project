@@ -35,7 +35,7 @@
     <div class="chart">
         <!-- User interactive scene -->
         <select id="countrySelector" onchange="updateCountryCharts()">
-            <option value="All">All Countries</option>
+            <option value="World">World</option>
             <!-- Add options dynamically via JavaScript -->  
         </select>
         <svg id="countryGraph1" width="800" height="400"></svg>
@@ -65,7 +65,7 @@
         let world_data;
 
         // function to create a copy of the data
-        function copyData(data) {
+            function copyData(data) {
             return data.map(d => ({ ...d }));
         }
 
@@ -378,6 +378,7 @@
         multiLineGraph("year", carbonImpactJson,  "", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0));
 
 
+        updateCountryCharts();
         // TODO: Add annotations to the graph
         }
     </script>
