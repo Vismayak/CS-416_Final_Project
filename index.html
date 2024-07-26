@@ -267,7 +267,7 @@
         }    
         }
 
-        function multiLineGraph(xAxisColumn, yJSON, unitJson, yLabel, xLabel, svg, data) {
+        function multiLineGraph(xAxisColumn, yJSON, unitJson, yLabel, xLabel, svg, data, annotationsJson) {
             // Set the dimensions and margins of the graph
             const margin = {top: 10, right: 150, bottom: 30, left: 50};
             const width = +svg.attr("width")  - margin.left - margin.right;
@@ -415,6 +415,27 @@
                 .text(d => yJSON[d])
                 .attr("text-anchor", "start")
                 .style("alignment-baseline", "middle");
+        
+            // Add annotations
+            if (annotationsJson) {
+            const annotations = annotationsJson.map(annotation => {
+                return {
+                    note: {
+                        title: annotation.title,
+                        label: annotation.label
+                    },
+                    x: x(parseTime(annotation.x)),
+                    y: y(annotation.y),
+                    dx: annotation.dx,
+                    dy: annotation.dy
+                };
+            });
+            g.append("g")
+            .attr("class", "annotation-group")
+            .call(d3.annotation()
+                .annotations(annotations)
+            );
+        }    
         }
 
         function filterDataByCountry(data, country) {
@@ -463,6 +484,16 @@
             }
         ];
 
+        const chart2Annotations = [
+            {
+                "x":"2000",
+                "y":world_data.filter(d => d.year === "2000")[0].hydro_share_elec,
+                "label": "Hyrdoelectricity produces the most electricity of all renewables",
+                "dx": -60,
+                "dy": 30
+            }
+        ]
+
         const chart3Annotations = [
             {
                 "x": "2007",
@@ -476,7 +507,7 @@
         // Scene 1: Single line graph showing renewables share of electricity and carbon intensity
         singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data),"%", "green", chart1Annotations);
         // Scene 2: Multi-line graph showing different renewable sources
-        multiLineGraph("year", sourcesJson, sourcesUnit,  "% of Total Electricity", "Year", chart2, copyData(world_data),);
+        multiLineGraph("year", sourcesJson, sourcesUnit,  "% of Total Electricity", "Year", chart2, copyData(world_data), chart2Annotations);
         // Scene 3: Single line graph showing carbon intensity
         singleLineGraphTime("carbon_intensity_elec", "year", "Greenhouse gases emitted per unit of generated electricity", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0),"gCO2e/kWh", "red", chart3Annotations);
 
