@@ -6,19 +6,64 @@
     <title>Overview of Renewable Energy Adoption</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        .chart {
+            display: none;
+        }
+        .chart.active {
+            display: block;
+        }
     </style>
 </head>
 <body onload="init()">
 
     <!-- Part of the page that is static and html driven, add text stuff here -->
     <h1> Overview of Renewable Energy Adoption</h1>
-    <svg width="900" height="400"></svg>
+    <button id="prevButton" onclick="prevScene()">Previous</button>
+    <button id="nextButton" onclick="nextScene()">Next</button>
+    <div class="chart active">
+        <p> This chart shows the percentage of total electricity generated from renewable sources and the carbon intensity of electricity generation over time. </p>
+        <svg id="graph1"  width="800" height="400"></svg>
+    </div>
+    <div class="chart">
+        <p> This chart shows the percentage of total electricity generated from different renewable sources over time. </p>
+        <svg id="graph2"  width="800" height="400"></svg>
+    </div>
+    <div class="chart">
+        <p> This chart shows the percentage of total electricity generated from renewable sources and the carbon intensity of electricity generation over time. </p>
+        <svg id="graph3"  width="800" height="400"></svg>    
+    </div>
 
     <!-- For charts where we might want a tool tip -->
     <div id="tooltip" style="position: absolute; opacity: 0; background: lightsteelblue; padding: 5px; border-radius: 5px;"></div>
 
     <!-- D3 scropting stuff will be here -->
     <script>
+        let currentScene = 0;
+
+        function prevScene() {
+            if (currentScene > 0) {
+                currentScene--;
+                showScene(currentScene);
+            }
+        }
+
+        function nextScene() {
+            if (currentScene < 2) {
+                currentScene++;
+                showScene(currentScene);
+            }
+        }
+
+        function showScene(sceneIndex) {
+            const charts = document.querySelectorAll(".chart");
+            charts.forEach((chart, index) => {
+                if (index === sceneIndex) {
+                    chart.classList.add("active");
+                } else {
+                    chart.classList.remove("active");
+                }
+            });
+        }
 
         function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data) {
             // Set the dimensions and margins of the graph
@@ -113,6 +158,7 @@
 
         function multiLineGraph(xAxisColumn, yJSON, yLabel, xLabel, svg, data) {
             // Set the dimensions and margins of the graph
+            console.log(data);
             const margin = {top: 10, right: 150, bottom: 30, left: 50};
             const width = +svg.attr("width")  - margin.left - margin.right;
             const height = +svg.attr("height")  - margin.top - margin.bottom;
@@ -236,7 +282,16 @@
         async function init() {
         // Load data
         const world_data = await d3.csv("data/world_energy_data.csv");
-        // singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year", d3.select("svg"), world_data);
+
+        // function to create a copy of the data
+        function copyData(data) {
+            return data.map(d => ({ ...d }));
+        }
+
+        const chart1 = d3.select("#graph1");
+        const chart2 = d3.select("#graph2");
+        const chart3 = d3.select("#graph3");
+        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data));
         const sourcesJson = {
             "wind_share_elec": "Wind",
             "solar_share_elec": "Solar",
@@ -244,14 +299,14 @@
             "biofuel_share_elec": "Biofuel",
             "other_renewables_share_elec_exc_biofuel": "Other Renewables"
         };
-        // multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", d3.select("svg"), world_data);
+        multiLineGraph("year", sourcesJson,  "% of Total Electricity", "Year", chart2, copyData(world_data));
 
         const carbonImpactJson = {
             "renewables_share_elec": "% of Total Electricity from Renewables",
             "carbon_intensity_elec": "Greenhouse gases emitted per unit of generated electricity"
         };
         // Multi-line graph with renewables and carbon intensity data to see impact, filter out 0 carbon intensity values
-        multiLineGraph("year", carbonImpactJson,  "", "Year", d3.select("svg"), world_data.filter(d => d.carbon_intensity_elec != 0));
+        multiLineGraph("year", carbonImpactJson,  "", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0));
 
 
         // TODO: Add annotations to the graph
