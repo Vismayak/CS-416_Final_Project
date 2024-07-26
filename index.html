@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Overview of Renewable Energy Adoption</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script> 
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
     <style>
         .chart {
             display: none;
@@ -138,7 +139,7 @@
             });
         }
 
-        function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data, yUnit) {
+        function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data, yUnit,annotationsJson) {
             // Set the dimensions and margins of the graph
             const margin = {top: 10, right: 130, bottom: 30, left: 60};
             const width = +svg.attr("width")  - margin.left - margin.right;
@@ -244,7 +245,26 @@
                     circles.style("opacity", 0);
                 });
                 
-            
+        // Add Annotations
+        if (annotationsJson) {
+            const annotations = annotationsJson.map(annotation => {
+                return {
+                    note: {
+                        title: annotation.title,
+                        label: annotation.label
+                    },
+                    x: x(parseTime(annotation.x)),
+                    y: y(annotation.y),
+                    dx: annotation.dx,
+                    dy: annotation.dy
+                };
+            });
+            g.append("g")
+            .attr("class", "annotation-group")
+            .call(d3.annotation()
+                .annotations(annotations)
+            );
+        }    
         }
 
         function multiLineGraph(xAxisColumn, yJSON, unitJson, yLabel, xLabel, svg, data) {
@@ -432,9 +452,21 @@
         const chart1 = d3.select("#graph1");
         const chart2 = d3.select("#graph2");
         const chart3 = d3.select("#graph3");
+        
+        // console.log(world_data.filter(d => d.year === "2010")[0].renewables_share_elec);
+        const annotations = [
+    {
+        "x": "2016",
+        "y": world_data.filter(d => d.year === "2016")[0].renewables_share_elec,
+        "label": "The Paris Agreement was signed",
+        "title": "2016",
+        "dx": 30,
+        "dy": 30
+    }
+];
 
         // Scene 1: Single line graph showing renewables share of electricity and carbon intensity
-        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data),"%");
+        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data),"%",annotations);
         // Scene 2: Multi-line graph showing different renewable sources
         multiLineGraph("year", sourcesJson, sourcesUnit,  "% of Total Electricity", "Year", chart2, copyData(world_data),);
 
