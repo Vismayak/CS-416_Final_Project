@@ -139,7 +139,7 @@
             });
         }
 
-        function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data, yUnit,annotationsJson) {
+        function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data, yUnit, lineColor,annotationsJson) {
             // Set the dimensions and margins of the graph
             const margin = {top: 10, right: 130, bottom: 30, left: 60};
             const width = +svg.attr("width")  - margin.left - margin.right;
@@ -188,7 +188,7 @@
             g.append("path")
                 .datum(data)
                 .attr("fill", "none")
-                .attr("stroke", "steelblue")
+                .attr("stroke", lineColor)
                 .attr("stroke-width", 1.5)
                 .attr("d", d3.line()
                     .x(function(d) { return x(d[xAxisColumn]) })
@@ -203,7 +203,7 @@
                 .attr("cx", d => x(d[xAxisColumn]))
                 .attr("cy", d => y(d[yAxisColumn]))
                 .attr("r", 5)
-                .attr("fill", "steelblue")
+                .attr("fill", lineColor)
                 .style("opacity", 0);
             
             // Tooltip setup
@@ -433,10 +433,9 @@
             const chart2 = d3.select("#countryGraph2");
             const chart3 = d3.select("#countryGraph3");
 
-            singleLineGraphTime("renewables_share_elec", "year", "% of Total Electricity", "Year", chart1, copyData(data),"%");
+            singleLineGraphTime("renewables_share_elec", "year", "% of Total Electricity", "Year", chart1, copyData(data),"%", "green");
             multiLineGraph("year", sourcesJson, sourcesUnit, "% of Total Electricity", "Year", chart2, copyData(data));
-            // multiLineGraph("year", carbonImpactJson, carbonImpactUnit, "", "Year", chart3, copyData(data).filter(d => d.carbon_intensity_elec != 0));
-            singleLineGraphTime("carbon_intensity_elec", "year", "Greenhouse gases emitted per unit of generated electricity", "Year", chart3, copyData(data).filter(d => d.carbon_intensity_elec != 0),"gCO2e/kWh");
+            singleLineGraphTime("carbon_intensity_elec", "year", "Greenhouse gases emitted per unit of generated electricity", "Year", chart3, copyData(data).filter(d => d.carbon_intensity_elec != 0),"gCO2e/kWh", "red");
         }
 
         // Function to initialize the page and required data
@@ -453,27 +452,33 @@
         const chart2 = d3.select("#graph2");
         const chart3 = d3.select("#graph3");
         
-        // console.log(world_data.filter(d => d.year === "2010")[0].renewables_share_elec);
-        const annotations = [
-    {
-        "x": "2016",
-        "y": world_data.filter(d => d.year === "2016")[0].renewables_share_elec,
-        "label": "The Paris Agreement was signed",
-        "title": "2016",
-        "dx": 30,
-        "dy": 30
-    }
-];
+        const chart1Annotations = [
+            {
+                "x": "2016",
+                "y": world_data.filter(d => d.year === "2016")[0].renewables_share_elec,
+                "label": "The Paris Agreement was signed",
+                "title": "2016",
+                "dx": 30,
+                "dy": 30
+            }
+        ];
+
+        const chart3Annotations = [
+            {
+                "x": "2007",
+                "y": world_data.filter(d => d.year === "2007")[0].carbon_intensity_elec,
+                "label": "A gradual decline in carbon intensity starting from 2007" ,
+                "dx": -20,
+                "dy": 50
+            }
+        ];
 
         // Scene 1: Single line graph showing renewables share of electricity and carbon intensity
-        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data),"%",annotations);
+        singleLineGraphTime("renewables_share_elec", "year","% of Total Electricity", "Year",chart1, copyData(world_data),"%", "green", chart1Annotations);
         // Scene 2: Multi-line graph showing different renewable sources
         multiLineGraph("year", sourcesJson, sourcesUnit,  "% of Total Electricity", "Year", chart2, copyData(world_data),);
-
-        singleLineGraphTime("carbon_intensity_elec", "year", "Greenhouse gases emitted per unit of generated electricity", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0),"gCO2e/kWh");
-        // Multi-line graph with renewables and carbon intensity data to see impact, filter out 0 carbon intensity values
-        // multiLineGraph("year", carbonImpactJson, carbonImpactUnit,  "", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0));
-
+        // Scene 3: Single line graph showing carbon intensity
+        singleLineGraphTime("carbon_intensity_elec", "year", "Greenhouse gases emitted per unit of generated electricity", "Year", chart3, copyData(world_data).filter(d => d.carbon_intensity_elec != 0),"gCO2e/kWh", "red", chart3Annotations);
 
         updateCountryCharts();
         // TODO: Add annotations to the graph
