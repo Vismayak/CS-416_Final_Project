@@ -54,6 +54,24 @@
             }
         }
 
+
+        function updateButtonVisibility() {
+            const prevButton = document.getElementById("prevButton");
+            const nextButton = document.getElementById("nextButton");
+
+            if (currentScene === 0) {
+                prevButton.style.display = "none";
+            } else {
+                prevButton.style.display = "inline";
+            }
+
+            if (currentScene === 2) {
+                nextButton.style.display = "none";
+            } else {
+                nextButton.style.display = "inline";
+            }
+        }
+
         function showScene(sceneIndex) {
             const charts = document.querySelectorAll(".chart");
             charts.forEach((chart, index) => {
@@ -63,6 +81,7 @@
                     chart.classList.remove("active");
                 }
             });
+            updateButtonVisibility();
         }
 
         function singleLineGraphTime(yAxisColumn, xAxisColumn, yLabel, xLabel, svg, data) {
@@ -141,7 +160,7 @@
 
                     // Show the tooltip
                     tooltip.transition()
-                        .duration(50)
+                        .duration(100)
                         .style("opacity", .9);
                     
                     tooltip.html(`${xLabel}: `+ d3.timeFormat("%Y")(d[xAxisColumn]) + `<br/> ${yLabel}: ` + d[yAxisColumn] + "%")
@@ -150,7 +169,7 @@
                 })
                 .on("mouseout", function() {
                     tooltip.transition()
-                        .duration(50)
+                        .duration(100)
                         .style("opacity", 0);
                 });
             
@@ -241,7 +260,7 @@
 
                     // Show the tooltip
                     tooltip.transition()
-                        .duration(50)
+                        .duration(100)
                         .style("opacity", .9);
 
                     tooltip.html(`${xLabel}: ` + d3.timeFormat("%Y")(d[xAxisColumn]) + "<br/>"
@@ -251,7 +270,7 @@
                     })
                 .on("mouseout", function() {
                     tooltip.transition()
-                        .duration(50)
+                        .duration(100)
                         .style("opacity", 0);
                 });
             
@@ -280,6 +299,7 @@
 
         // Function to initialize the page and required data
         async function init() {
+        updateButtonVisibility();
         // Load data
         const world_data = await d3.csv("data/world_energy_data.csv");
 
