@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overview of Renewable Energy Adoption</title>
+    <title>Renewable Energy Adoption</title>
     <script src="https://d3js.org/d3.v7.min.js"></script> 
     <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
     <style>
@@ -18,7 +18,7 @@
 <body onload="init()">
 
     <!-- Part of the page that is static and html driven, add text stuff here -->
-    <h1> Overview of Renewable Energy Adoption</h1>
+    <h1> Renewable Energy Adoption</h1>
     <h4><strong>Data Source</strong>  - <a href="https://ourworldindata.org/renewable-energy" target="_blank">Our World in Data</a></h4>
     <p>Charts that provide users with details of renewable energy adoption and breakdown. Use cursor to hover over charts for more specfic details<p>
     <button id="prevButton" onclick="prevScene()">Previous</button>
@@ -29,11 +29,11 @@
     </div>
     <div class="chart">
         <svg id="graph2"  width="800" height="400"></svg>
-        <p> The chart shows the percentage of total electricity generated from different renewable sources over time. </p>
+        <p> The chart shows the percentage of total electricity generated worldwide from different renewable sources over time. </p>
     </div>
     <div class="chart">
         <svg id="graph3"  width="800" height="400"></svg>   
-        <p>The chart represents the carbon intensity of electricity generation. Carbon intensity refers to the greenhouse gases emitted per unit of generated electricity, measured in CO<sub>2</sub> equivalents per kilowatt-hour.</p>
+        <p>The chart represents the worldwide intensity of electricity generation. Carbon intensity refers to the greenhouse gases emitted per unit of generated electricity, measured in CO<sub>2</sub> equivalents per kilowatt-hour.</p>
     </div>
     <div class="chart">
         <!-- User interactive scene -->
